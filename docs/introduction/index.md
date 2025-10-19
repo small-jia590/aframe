@@ -1,179 +1,396 @@
----
-title: Introduction
-section_title: Introduction
-type: introduction
-layout: docs
-order: 1
-parent_section: docs
-section_order: 1
-installation: true
-examples:
-  - title: Hello, World!
-    src: https://glitch.com/edit/#!/aframe?path=index.html
----
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>熊猫馆VR体验</title>
+    <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+    <script src="https://unpkg.com/aframe-environment-component@1.3.0/dist/aframe-environment-component.min.js"></script>
+    <script src="https://unpkg.com/aframe-extras@6.1.1/dist/aframe-extras.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Arial', sans-serif;
+        }
+        #ui-container {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            max-width: 300px;
+        }
+        h1 {
+            color: #2c5530;
+            margin-top: 0;
+        }
+        .instructions {
+            margin: 10px 0;
+            line-height: 1.5;
+        }
+        .controls {
+            margin-top: 15px;
+            font-size: 14px;
+        }
+        .btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            margin: 5px 5px 5px 0;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .btn:hover {
+            background: #45a049;
+        }
+        .vr-btn {
+            background: #2196F3;
+        }
+        .vr-btn:hover {
+            background: #0b7dda;
+        }
+        .mobile-controls {
+            position: absolute;
+            bottom: 20px;
+            width: 100%;
+            display: none;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .joystick {
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 50%;
+            margin: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            touch-action: none;
+        }
+        @media (max-width: 768px) {
+            #ui-container {
+                max-width: 200px;
+                font-size: 14px;
+            }
+            .mobile-controls {
+                display: flex;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="ui-container">
+        <h1>熊猫馆VR体验</h1>
+        <div class="instructions">
+            <p>欢迎来到虚拟熊猫馆！您可以：</p>
+            <ul>
+                <li>使用鼠标拖动来环顾四周</li>
+                <li>使用WASD键或方向键移动</li>
+                <li>点击熊猫与它们互动</li>
+                <li>点击竹子听到熊猫的声音</li>
+            </ul>
+        </div>
+        <div class="controls">
+            <button class="btn vr-btn" id="enter-vr">进入VR模式</button>
+            <button class="btn" id="reset-view">重置视角</button>
+        </div>
+    </div>
 
-[three.js]: https://threejs.org
+    <div class="mobile-controls">
+        <div class="joystick" id="move-joystick">移动</div>
+        <div class="joystick" id="look-joystick">视角</div>
+    </div>
 
-## Getting Started
-
-[glitch]: http://glitch.com/~aframe
-
-A-Frame can be developed from a plain HTML file without having to install
-anything. A great way to try out A-Frame is to **[remix the starter example on
-Glitch][glitch]**, an online code editor that instantly hosts and deploys for
-free. Alternatively, create an `.html` file and include A-Frame in the
-`<head>`:
-
-```html
-<html>
-  <head>
-    <script src="https://aframe.io/releases/1.7.1/aframe.min.js"></script>
-  </head>
-  <body>
-    <a-scene>
-      <a-box position="-1 0.5 -3" rotation="0 45 0" color="#4CC3D9"></a-box>
-      <a-sphere position="0 1.25 -5" radius="1.25" color="#EF2D5E"></a-sphere>
-      <a-cylinder position="1 0.75 -3" radius="0.5" height="1.5" color="#FFC65D"></a-cylinder>
-      <a-plane position="0 0 -4" rotation="-90 0 0" width="4" height="4" color="#7BC8A4"></a-plane>
-      <a-sky color="#ECECEC"></a-sky>
+    <a-scene 
+        vr-mode-ui="enterVRButton: #enter-vr"
+        cursor="rayOrigin: mouse"
+        raycaster="objects: .clickable"
+        loading-screen="enabled: false">
+        
+        <!-- 场景环境 -->
+        <a-entity environment="preset: forest; lighting: none; shadow: false"></a-entity>
+        
+        <!-- 天空 -->
+        <a-sky color="#87CEEB"></a-sky>
+        
+        <!-- 地面 -->
+        <a-circle id="ground" position="0 0 0" rotation="-90 0 0" radius="30" color="#7EC850" shadow="receive: true"></a-circle>
+        
+        <!-- 熊猫馆建筑 -->
+        <a-box id="panda-house" position="0 0.5 -5" width="10" height="3" depth="8" color="#F5F5DC" shadow="cast: true; receive: true">
+            <a-box position="0 1.5 4" width="8" height="2" depth="0.2" color="#8B4513"></a-box>
+            <a-box position="-4.5 1.5 0" width="0.2" height="2" depth="7" color="#8B4513"></a-box>
+            <a-box position="4.5 1.5 0" width="0.2" height="2" depth="7" color="#8B4513"></a-box>
+            <a-cylinder position="0 3.5 0" radius="5.5" height="0.5" color="#8B4513" open-ended="true"></a-cylinder>
+        </a-box>
+        
+        <!-- 竹林 -->
+        <a-entity id="bamboo-forest">
+            <!-- 多棵竹子 -->
+            <a-cylinder class="bamboo clickable" position="-8 1.5 -8" radius="0.2" height="5" color="#7CFC00" shadow="cast: true">
+                <a-cone position="0 2.5 0" radius-bottom="1" radius-top="0" height="2" color="#228B22"></a-cone>
+            </a-cylinder>
+            <a-cylinder class="bamboo clickable" position="7 1.5 -10" radius="0.2" height="6" color="#7CFC00" shadow="cast: true">
+                <a-cone position="0 3 0" radius-bottom="1.2" radius-top="0" height="2.5" color="#228B22"></a-cone>
+            </a-cylinder>
+            <a-cylinder class="bamboo clickable" position="-10 1.5 5" radius="0.2" height="4" color="#7CFC00" shadow="cast: true">
+                <a-cone position="0 2 0" radius-bottom="0.8" radius-top="0" height="1.5" color="#228B22"></a-cone>
+            </a-cylinder>
+            <a-cylinder class="bamboo clickable" position="9 1.5 7" radius="0.2" height="5.5" color="#7CFC00" shadow="cast: true">
+                <a-cone position="0 2.75 0" radius-bottom="1.1" radius-top="0" height="2.2" color="#228B22"></a-cone>
+            </a-cylinder>
+            <a-cylinder class="bamboo clickable" position="5 1.5 -5" radius="0.2" height="4.5" color="#7CFC00" shadow="cast: true">
+                <a-cone position="0 2.25 0" radius-bottom="1" radius-top="0" height="1.8" color="#228B22"></a-cone>
+            </a-cylinder>
+        </a-entity>
+        
+        <!-- 熊猫模型1 - 坐着的熊猫 -->
+        <a-entity class="panda clickable" id="panda1" position="-3 0.5 0" animation="property: rotation; to: 0 360 0; loop: true; dur: 20000">
+            <!-- 身体 -->
+            <a-sphere position="0 0.5 0" radius="0.5" color="white" shadow="cast: true"></a-sphere>
+            <!-- 头 -->
+            <a-sphere position="0 1.2 0.4" radius="0.4" color="white" shadow="cast: true">
+                <!-- 耳朵 -->
+                <a-sphere position="-0.2 0.3 0.1" radius="0.15" color="black"></a-sphere>
+                <a-sphere position="0.2 0.3 0.1" radius="0.15" color="black"></a-sphere>
+                <!-- 眼睛 -->
+                <a-sphere position="-0.15 0.1 0.3" radius="0.05" color="black"></a-sphere>
+                <a-sphere position="0.15 0.1 0.3" radius="0.05" color="black"></a-sphere>
+                <!-- 眼斑 -->
+                <a-sphere position="-0.15 0.1 0.25" radius="0.08" color="black"></a-sphere>
+                <a-sphere position="0.15 0.1 0.25" radius="0.08" color="black"></a-sphere>
+                <!-- 鼻子 -->
+                <a-sphere position="0 0 0.4" radius="0.06" color="black"></a-sphere>
+            </a-sphere>
+            <!-- 四肢 -->
+            <a-cylinder position="-0.3 0.2 0.2" radius="0.1" height="0.4" color="black" rotation="30 0 0"></a-cylinder>
+            <a-cylinder position="0.3 0.2 0.2" radius="0.1" height="0.4" color="black" rotation="30 0 0"></a-cylinder>
+            <a-cylinder position="-0.25 -0.1 -0.2" radius="0.1" height="0.4" color="black" rotation="-30 0 0"></a-cylinder>
+            <a-cylinder position="0.25 -0.1 -0.2" radius="0.1" height="0.4" color="black" rotation="-30 0 0"></a-cylinder>
+        </a-entity>
+        
+        <!-- 熊猫模型2 - 行走的熊猫 -->
+        <a-entity class="panda clickable" id="panda2" position="3 0.5 -3">
+            <!-- 身体 -->
+            <a-sphere position="0 0.5 0" radius="0.5" color="white" shadow="cast: true"></a-sphere>
+            <!-- 头 -->
+            <a-sphere position="0 1.2 0.4" radius="0.4" color="white" shadow="cast: true">
+                <!-- 耳朵 -->
+                <a-sphere position="-0.2 0.3 0.1" radius="0.15" color="black"></a-sphere>
+                <a-sphere position="0.2 0.3 0.1" radius="0.15" color="black"></a-sphere>
+                <!-- 眼睛 -->
+                <a-sphere position="-0.15 0.1 0.3" radius="0.05" color="black"></a-sphere>
+                <a-sphere position="0.15 0.1 0.3" radius="0.05" color="black"></a-sphere>
+                <!-- 眼斑 -->
+                <a-sphere position="-0.15 0.1 0.25" radius="0.08" color="black"></a-sphere>
+                <a-sphere position="0.15 0.1 0.25" radius="0.08" color="black"></a-sphere>
+                <!-- 鼻子 -->
+                <a-sphere position="0 0 0.4" radius="0.06" color="black"></a-sphere>
+            </a-sphere>
+            <!-- 四肢 -->
+            <a-cylinder position="-0.3 0.1 0.2" radius="0.1" height="0.5" color="black" rotation="10 0 0"></a-cylinder>
+            <a-cylinder position="0.3 0.3 0.2" radius="0.1" height="0.5" color="black" rotation="-10 0 0"></a-cylinder>
+            <a-cylinder position="-0.25 -0.2 -0.2" radius="0.1" height="0.5" color="black" rotation="10 0 0"></a-cylinder>
+            <a-cylinder position="0.25 0 -0.2" radius="0.1" height="0.5" color="black" rotation="-10 0 0"></a-cylinder>
+        </a-entity>
+        
+        <!-- 熊猫模型3 - 吃竹子的熊猫 -->
+        <a-entity class="panda clickable" id="panda3" position="0 0.5 3">
+            <!-- 身体 -->
+            <a-sphere position="0 0.5 0" radius="0.5" color="white" shadow="cast: true"></a-sphere>
+            <!-- 头 -->
+            <a-sphere position="0 1.2 0.4" radius="0.4" color="white" shadow="cast: true">
+                <!-- 耳朵 -->
+                <a-sphere position="-0.2 0.3 0.1" radius="0.15" color="black"></a-sphere>
+                <a-sphere position="0.2 0.3 0.1" radius="0.15" color="black"></a-sphere>
+                <!-- 眼睛 -->
+                <a-sphere position="-0.15 0.1 0.3" radius="0.05" color="black"></a-sphere>
+                <a-sphere position="0.15 0.1 0.3" radius="0.05" color="black"></a-sphere>
+                <!-- 眼斑 -->
+                <a-sphere position="-0.15 0.1 0.25" radius="0.08" color="black"></a-sphere>
+                <a-sphere position="0.15 0.1 0.25" radius="0.08" color="black"></a-sphere>
+                <!-- 鼻子 -->
+                <a-sphere position="0 0 0.4" radius="0.06" color="black"></a-sphere>
+            </a-sphere>
+            <!-- 四肢 -->
+            <a-cylinder position="-0.3 0.2 0.2" radius="0.1" height="0.4" color="black" rotation="30 0 0"></a-cylinder>
+            <a-cylinder position="0.3 0.2 0.2" radius="0.1" height="0.4" color="black" rotation="30 0 0"></a-cylinder>
+            <a-cylinder position="-0.25 -0.1 -0.2" radius="0.1" height="0.4" color="black" rotation="-30 0 0"></a-cylinder>
+            <a-cylinder position="0.25 -0.1 -0.2" radius="0.1" height="0.4" color="black" rotation="-30 0 0"></a-cylinder>
+            <!-- 竹子 -->
+            <a-cylinder position="0.2 0.8 0.5" radius="0.03" height="1" color="#7CFC00" rotation="0 0 20"></a-cylinder>
+        </a-entity>
+        
+        <!-- 玩家/相机 -->
+        <a-entity id="player" movement-controls="fly: true">
+            <a-entity id="camera" camera="active: true" position="0 1.6 0" look-controls wasd-controls="fly: true">
+                <a-cursor id="cursor" 
+                         animation__click="property: scale; from: 0.1 0.1 0.1; to: 1 1 1; easing: easeInCubic; dur: 150"
+                         animation__fusing="property: scale; from: 1 1 1; to: 0.1 0.1 0.1; easing: easeInCubic; dur: 1500"
+                         event-set__1="_event: mouseenter; color: springgreen"
+                         event-set__2="_event: mouseleave; color: black"
+                         fuse="true"
+                         raycaster="objects: .clickable">
+                </a-cursor>
+            </a-entity>
+        </a-entity>
+        
+        <!-- 环境音效 -->
+        <a-sound src="https://cdn.aframe.io/basic-guide/audio/backgroundnoise.wav" autoplay="true" loop="true" volume="0.2"></a-sound>
     </a-scene>
-  </body>
+
+    <script>
+        // 添加交互功能
+        document.addEventListener('DOMContentLoaded', function() {
+            // 重置视角按钮
+            document.getElementById('reset-view').addEventListener('click', function() {
+                const camera = document.querySelector('#camera');
+                camera.setAttribute('position', '0 1.6 0');
+                camera.setAttribute('rotation', '0 0 0');
+            });
+            
+            // 熊猫点击交互
+            const pandas = document.querySelectorAll('.panda');
+            pandas.forEach(function(panda) {
+                panda.addEventListener('click', function() {
+                    // 添加简单的动画效果
+                    panda.setAttribute('animation', {
+                        property: 'rotation',
+                        to: '0 360 0',
+                        dur: 2000,
+                        easing: 'easeInOutQuad'
+                    });
+                    
+                    // 重置动画
+                    setTimeout(function() {
+                        panda.removeAttribute('animation');
+                    }, 2000);
+                });
+            });
+            
+            // 竹子点击交互
+            const bamboos = document.querySelectorAll('.bamboo');
+            bamboos.forEach(function(bamboo) {
+                bamboo.addEventListener('click', function() {
+                    // 添加简单的动画效果
+                    bamboo.setAttribute('animation', {
+                        property: 'scale',
+                        from: '1 1 1',
+                        to: '1.2 1.2 1.2',
+                        dur: 500,
+                        easing: 'easeInOutQuad'
+                    });
+                    
+                    // 重置动画
+                    setTimeout(function() {
+                        bamboo.setAttribute('animation', {
+                            property: 'scale',
+                            to: '1 1 1',
+                            dur: 500,
+                            easing: 'easeInOutQuad'
+                        });
+                    }, 500);
+                });
+            });
+            
+            // 移动设备控制
+            if (window.innerWidth <= 768) {
+                initMobileControls();
+            }
+        });
+        
+        // 移动设备控制初始化
+        function initMobileControls() {
+            const moveJoystick = document.getElementById('move-joystick');
+            const lookJoystick = document.getElementById('look-joystick');
+            const player = document.getElementById('player');
+            
+            let moveTouchId = null;
+            let lookTouchId = null;
+            
+            // 移动控制
+            moveJoystick.addEventListener('touchstart', function(e) {
+                e.preventDefault();
+                moveTouchId = e.changedTouches[0].identifier;
+            });
+            
+            moveJoystick.addEventListener('touchmove', function(e) {
+                e.preventDefault();
+                if (!moveTouchId) return;
+                
+                for (let i = 0; i < e.changedTouches.length; i++) {
+                    const touch = e.changedTouches[i];
+                    if (touch.identifier === moveTouchId) {
+                        const rect = moveJoystick.getBoundingClientRect();
+                        const centerX = rect.left + rect.width / 2;
+                        const centerY = rect.top + rect.height / 2;
+                        
+                        const deltaX = touch.clientX - centerX;
+                        const deltaY = touch.clientY - centerY;
+                        
+                        // 根据触摸位置移动玩家
+                        const moveX = deltaX / 50;
+                        const moveZ = -deltaY / 50;
+                        
+                        const position = player.getAttribute('position');
+                        player.setAttribute('position', {
+                            x: position.x + moveX,
+                            y: position.y,
+                            z: position.z + moveZ
+                        });
+                    }
+                }
+            });
+            
+            moveJoystick.addEventListener('touchend', function(e) {
+                e.preventDefault();
+                moveTouchId = null;
+            });
+            
+            // 视角控制
+            lookJoystick.addEventListener('touchstart', function(e) {
+                e.preventDefault();
+                lookTouchId = e.changedTouches[0].identifier;
+            });
+            
+            lookJoystick.addEventListener('touchmove', function(e) {
+                e.preventDefault();
+                if (!lookTouchId) return;
+                
+                for (let i = 0; i < e.changedTouches.length; i++) {
+                    const touch = e.changedTouches[i];
+                    if (touch.identifier === lookTouchId) {
+                        const rect = lookJoystick.getBoundingClientRect();
+                        const centerX = rect.left + rect.width / 2;
+                        const centerY = rect.top + rect.height / 2;
+                        
+                        const deltaX = touch.clientX - centerX;
+                        const deltaY = touch.clientY - centerY;
+                        
+                        // 根据触摸位置旋转相机
+                        const camera = document.querySelector('#camera');
+                        const rotation = camera.getAttribute('rotation');
+                        
+                        camera.setAttribute('rotation', {
+                            x: rotation.x - deltaY / 10,
+                            y: rotation.y + deltaX / 10,
+                            z: rotation.z
+                        });
+                    }
+                }
+            });
+            
+            lookJoystick.addEventListener('touchend', function(e) {
+                e.preventDefault();
+                lookTouchId = null;
+            });
+        }
+    </script>
+</body>
 </html>
-```
-
-[Installation]: ./installation.md
-[school]: https://aframe.io/school/
-
-The [Installation] page provides more options for getting started with A-Frame.
-To get started learning A-Frame, check out [A-Frame School][school] for visual
-step-by-step lessons to complement the documentation.
-
-## What is A-Frame?
-
-[github]: https://github.com/aframevr/
-[community]: https://aframe.io/community/
-
-![A-Frame](https://cloud.githubusercontent.com/assets/674727/25392020/6f011d10-298c-11e7-845e-c3c5baebd14d.jpg)
-
-:a:-Frame is a web framework for building virtual reality (VR) experiences.
-A-Frame is based on top of HTML, making it simple to get started. But A-Frame
-is not just a 3D scene graph or a markup language; the core is a powerful
-entity-component framework that provides a declarative, extensible, and
-composable structure to [three.js].
-
-Originally conceived within Mozilla and now maintained by the co-creators of
-A-Frame within [Supermedium](https://supermedium.com), A-Frame was developed to
-be an easy yet powerful way to develop VR content. As an [independent open
-source project][github], A-Frame has grown to be one of the [largest VR
-communities][community].
-
-A-Frame supports most VR and AR devices such as Meta Quest, Apple Vision Pro, PICO lineup, Lynx-R1 or Valve Index 
-Although A-Frame supports the whole spectrum, A-Frame aims to define
-fully immersive interactive VR experiences that go beyond basic 360&deg;
-content, making full use of positional tracking and controllers.
-
-<div class="docs-introduction-examples">
-  <a href="https://supermedium.com/supercraft">
-    <img alt="Supercraft" target="_blank" src="https://user-images.githubusercontent.com/674727/41085457-f5429566-69eb-11e8-92e5-3210e4c6c4a0.gif" height="190" width="32%">
-  </a>
-  <a href="https://aframe.io/a-painter/?url=https://ucarecdn.com/962b242b-87a9-422c-b730-febdc470f203/">
-    <img alt="A-Painter" target="_blank" src="https://cloud.githubusercontent.com/assets/674727/24531388/acfc3dda-156d-11e7-8563-5bd75252f70f.gif" height="190" width="32%">
-  </a>
-  <a href="https://supermedium.com">
-    <img alt="Supermedium" target="_blank" src="https://user-images.githubusercontent.com/674727/37294616-7212cd20-25d3-11e8-9e7f-c0c61074f1e0.png" height="190" width="32%">
-  </a>
-  <a href="https://aframe.io/a-blast/">
-    <img alt="A-Blast" target="_blank" src="https://cloud.githubusercontent.com/assets/674727/24531440/0336e66e-156e-11e7-95c2-f2e6ebc0393d.gif" height="190" width="32%">
-  </a>
-  <a href="https://aframe.io/a-saturday-night/">
-    <img alt="A-Saturday-Night" target="_blank" src="https://cloud.githubusercontent.com/assets/674727/24531477/44272daa-156e-11e7-8ef9-d750ed430f3a.gif" height="190" width="32%">
-  </a>
-  <a href="https://github.com/googlecreativelab/webvr-musicalforest">
-    <img alt="Musical Forest by @googlecreativelab" target="_blank" src="https://cloud.githubusercontent.com/assets/674727/25109861/b8e9ec48-2394-11e7-8f2d-ea1cd9df69c8.gif" height="190" width="32%">
-  </a>
-</div>
-
-## Features
-
-:eyeglasses: **VR Made Simple**: Just drop in a `<script>` tag and `<a-scene>`.
-A-Frame will handle 3D boilerplate, VR setup, and default controls. Nothing to
-install, no build steps.
-
-:heart: **Declarative HTML**: HTML is easy to read, understand, and
-copy-and-paste. Being based on top of HTML, A-Frame is accessible to everyone:
-web developers, VR enthusiasts, artists, designers, educators, makers, kids.
-
-:electric_plug: **Entity-Component Architecture**: A-Frame is a powerful
-[three.js] framework, providing a declarative, composable, reusable
-[entity-component structure][ecs]. HTML is just the tip of the iceberg;
-developers have unlimited access to JavaScript, DOM APIs, three.js, WebVR, and
-WebGL.
-
-:globe_with_meridians: **Cross-Platform VR**: Build VR applications for Vive,
-Rift, Meta Quest, Windows Mixed Reality, and Apple Vision Pro with support for
-all respective controllers. Don't have a headset or controllers? No problem!
-A-Frame still works on standard desktop and smartphones.
-
-[ecs]: ./entity-component-system.md
-
-[A-Painter]: https://github.com/aframevr/a-painter
-[Tilt Brush]: https://www.tiltbrush.com/
-
-:zap: **Performance**: A-Frame is optimized from the ground up for WebVR. While
-A-Frame uses the DOM, its elements don't touch the browser layout engine. 3D
-object updates are all done in memory with little garbage and overhead. The most
-interactive and large scale WebVR applications have been done in A-Frame
-running smoothly at 90fps.
-
-[inspector]: ./visual-inspector-and-dev-tools.md
-
-:mag: **Visual Inspector**: A-Frame provides a handy built-in [visual 3D
-inspector][inspector]. Open up *any* A-Frame scene, hit `<ctrl> + <alt> + i` or `<ctrl> + <option> + i`,
-and fly around to peek under the hood!
-
-![Inspector](https://cloud.githubusercontent.com/assets/674727/25377018/27be9cce-295b-11e7-9098-3e85ac1fe172.gif)
-
-[augmented reality]: https://github.com/jeromeetienne/AR.js#augmented-reality-for-the-web-in-less-than-10-lines-of-html
-[environment]: https://github.com/supermedium/aframe-environment-component
-[multiuser]: https://github.com/networked-aframe/networked-aframe
-[oceans]: https://github.com/c-frame/aframe-extras/tree/master/src/primitives
-[particle systems]: https://github.com/c-frame/aframe-particle-system-component
-[physics]: https://github.com/c-frame/aframe-physics-system
-[state]: https://npmjs.com/package/aframe-state-component
-[super hands]: https://github.com/c-frame/aframe-super-hands-component
-[teleportation]: https://github.com/jure/aframe-blink-controls
-
-:runner: **Components**: Hit the ground running with A-Frame's core components
-such as geometries, materials, lights, animations, models, raycasters, shadows,
-positional audio, text, and controls for most major headsets. Get even further
-from the hundreds of community components including [environment], [state], [particle
-systems], [physics], [multiuser], [oceans], [teleportation], [super hands], and
-[augmented reality].
-
-:earth_americas: **Proven and Scalable**: A-Frame has been used by companies
-such as Google, Disney, Samsung, Toyota, Ford, Chevrolet, Amnesty
-International, CERN, NPR, Al Jazeera, The Washington Post, NASA. Companies such
-as Google, Microsoft, Oculus, and Samsung have made contributions to A-Frame.
-
-## Off You Go!
-
-[Discord]: https://supermedium.com/discord
-
-If it's your first time here, here's a plan for success for getting into
-A-Frame:
-
-1. Read through the documentation to get a grasp.
-[Glitch](https://glitch.com/~aframe) is used as a recommended coding playground
-and for examples.
-
-2. [Join us on Discord][Discord] if you have any
-questions, [search and ask on StackOverflow](http://stackoverflow.com/questions/ask/?tags=aframe),
-and someone will try to get to you!
-
-3. When you build something, share your project online on X with the
-   `@aframevr` mention. You can also post it on the #self-promotion channel on
-   [Supermedium Discord][Discord] and #a-frame channel on
-   [WebXR Discord](https://discord.gg/jJxvuW97c4).
-
-And it really helps to have a dig into the fundamentals on JavaScript and
-[three.js](https://threejs.org/). Have fun!
